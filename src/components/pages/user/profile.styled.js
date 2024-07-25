@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const ImageProfile = styled.img`
     border-radius: 50%;
     height: 10em;
-    border: solid 2px #444444;
+    border: solid 2px #333333;
     width: 10em;
 `;
 
@@ -20,7 +20,6 @@ export const InfoUser = styled.div`
         margin-top: 0;
         padding: 0;
         font-weight: 700;
-        text-transform: uppercase;
         color: #555555;
     }
 

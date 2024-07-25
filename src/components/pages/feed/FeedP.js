@@ -150,19 +150,24 @@ export default function FeedP() {
               {post.owner.image ? (<ImgProfile src={`${process.env.REACT_APP_API_LOCAL}/img/users/${post.owner.image}`} alt={post.owner.name} />) : (
                 (<ImgProfile src={Avatar} alt={post.owner.name} />)
               )}
-              
+
             </Link>
             <PostInfo>
               <div style={{ marginLeft: '10px' }}>
-                <Link style={{ textDecoration: 'none', color: '#111111' }} to={`/userdetails/${post.owner._id}`}>{`${post.owner.name} ${post.owner.surname}`}</Link>
+                <Link style={{ textDecoration: 'none', color: '#111111' }} to={`/userdetails/${post.owner._id}`}>
+                <h4>{`${post.owner.name} ${post.owner.surname}`}</h4>
+                </Link>
                 <h6>{post.date}</h6>
                 <h5>{post.subtitle}</h5>
               </div>
-              <Link style={{ textDecoration: 'none', textTransform: 'uppercase', }} to={`/projectdetails/${post.project._id}`}><img src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${post.project.image}`} alt={post.project.image} /></Link>
+
             </PostInfo>
           </HeaderPost>
           <Divider />
-          <ImgProject src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${post.project.image}`} alt={post.project.name} />
+          <Link style={{ textDecoration: 'none' }} to={`/projectdetails/${post.project._id}`}>
+            <ImgProject src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${post.project.image}`} alt={post.project.name} />
+          </Link>
+
           <div style={{ display: 'flex' }}>
             {post.project.projectSkills.map((skill, index) => (
               <Skills key={index}>
@@ -172,7 +177,7 @@ export default function FeedP() {
           </div>
           <Divider />
           <Rating name="aprovation-level" precision={0.5} defaultValue={0} size="large" max={5}
-            sx={{position: "static"}}
+            sx={{ position: "static" }}
           />
         </NewPost>
 

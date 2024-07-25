@@ -19,8 +19,10 @@ export const NewPost = styled.div`
     margin-bottom: 20px;
     padding: 10px;
     width: 600px;
-    background-color: #777777;
+    background-color: #111111;
     margin-top: 20px;
+    color: #cccccc;
+    box-shadow: 0px 2px 6px 0px #000000;
 `;
 
 export const HeaderPost = styled.div`
@@ -33,7 +35,7 @@ export const ImgProfile = styled.img`
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: solid 1px #222222;
+    border: solid 2px #cccccc;
 `;
 
 export const ImgProject = styled.img`
@@ -50,10 +52,10 @@ export const CreatePost = styled.div`
     display: flex;
     flex-direction: column;
     padding: 15px;
-    border: solid 1px #333333;
     border-radius: 5px;
     width: 600px;
-    background-color: #646464;
+    background-color: #222222;
+    box-shadow: 0px 2px 6px 0px #000000;
 
     form {
         display: flex;
@@ -102,8 +104,16 @@ export const PostInfo = styled.div`
     }
 
     h6 {
-        color: #222222;
+        color: #cccccc;
         margin: 0;
+    }
+    h5 {
+        color: #cccccc
+    }
+
+    h4 {
+        margin: 0;
+        color: #cccccc;
     }
 
     a:focus {

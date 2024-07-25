@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../../utils/api";
-import { CardDocs, CardImage, CardUserInfo, Container, Desc, Docs, Header, Images, ImgAndDesc, ImgProject, Skills } from "./projectDetails.styled";
+import { CardDocs, CardImage, CardUserInfo, Container, Desc, Docs, Header, Images, ImgAndDesc, ImgProject, ImgUser, Skills, UserInfo } from "./projectDetails.styled";
 import { Dialog, DialogContent, Divider, Rating } from "@mui/material";
 import { SiAdobeacrobatreader } from 'react-icons/si';
 import { useSnackbar } from "notistack";
@@ -13,7 +13,7 @@ export default function ProjectDetails() {
   const { id } = useParams();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const [project, setProject] = useState();
+  const [project, setProject] = useState(null);
   const [token] = useState(localStorage.getItem('token') || '');
   const [images, setImages] = useState([]);
   const [docs, setDocs] = useState([]);
@@ -30,9 +30,11 @@ export default function ProjectDetails() {
         Authorization: `Bearer ${JSON.parse(token)}`
       }
     }).then((response) => {
-      setProject(response.data.project)
-    })
-  }, [id, token]);
+      setProject(response.data.project);
+    }).catch(error => {
+      enqueueSnackbar(error.message, { variant: 'error' });
+    });
+  }, [id, token, enqueueSnackbar]);
 
   useEffect(() => {
     api.get(`/imagesproject/getimages/${id}`, {
@@ -40,9 +42,11 @@ export default function ProjectDetails() {
         Authorization: `Bearer ${JSON.parse(token)}`
       }
     }).then((response) => {
-      setImages(response.data)
-    })
-  }, [id, token]);
+      setImages(response.data);
+    }).catch(error => {
+      enqueueSnackbar(error.message, { variant: 'error' });
+    });
+  }, [id, token, enqueueSnackbar]);
 
   useEffect(() => {
     api.get(`/docsproject/getdocs/${id}`, {
@@ -50,30 +54,31 @@ export default function ProjectDetails() {
         Authorization: `Bearer ${JSON.parse(token)}`
       }
     }).then((response) => {
-      setDocs(response.data)
-    })
-  }, [id, token]);
+      setDocs(response.data);
+    }).catch(error => {
+      enqueueSnackbar(error.message, { variant: 'error' });
+    });
+  }, [id, token, enqueueSnackbar]);
 
-  const handlesubmit = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const newdata = new FormData();
     newdata.append('rating', rate.rating);
     newdata.append('project', rate.project);
 
-
     try {
       const response = await api.post('/ratings/create', newdata, {
         headers: {
           Authorization: `Bearer ${JSON.parse(token)}`
         }
-      })
+      });
 
       enqueueSnackbar(response.data.message, { variant: 'success' });
     } catch (error) {
       enqueueSnackbar(error.message, { variant: 'error' });
     }
-  }
+  };
 
   const handleClickOpen = () => {
     setDialog(true);
@@ -83,32 +88,29 @@ export default function ProjectDetails() {
     setDialog(false);
   };
 
-
-
   if (!project) {
-    return <div>Carregando...</div>; // ou qualquer mensagem indicando que o projeto está sendo carregado
+    return <div>Carregando...</div>;
   }
 
   return (
     <Container>
       <Header>
-        <h1>{`<${project.name}/>`}</h1>
-        
         <CardUserInfo>
-        <div>
-        {project.owner.image ? (<img src={`${process.env.REACT_APP_API_LOCAL}/img/users/${project.owner.image}`} alt={project.owner.name} />):(
-            (<img src={Avatar} alt={project.owner.name} />)
-          )}
-          <h4>{project.owner.name}</h4>
-          
-        </div>
-        <div style={{display: 'flex', flexDirection: 'column'}}>
-        <p>@{project.owner.username}</p>
-        <p>{project.owner.xp}XP</p>
-        </div>
+          <ImgUser>
+            {project.owner && project.owner.image ? (
+              <img src={`${process.env.REACT_APP_API_LOCAL}/img/users/${project.owner.image}`} alt={project.owner.name} />
+            ) : (
+              <img src={Avatar} alt={project.owner ? project.owner.name : "Avatar"} />
+            )}
+            <h4>{project.owner ? project.owner.name : "Desconhecido"}</h4>
+          </ImgUser>
+          <UserInfo>
+            <p>@{project.owner ? project.owner.username : "Desconhecido"}</p>
+            <p>{project.owner ? project.owner.xp : 0}XP</p>
+          </UserInfo>
         </CardUserInfo>
-        
       </Header>
+
       {project.image && (
         <ImgProject src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${project.image}`} alt={project.name} />
       )}
@@ -127,11 +129,10 @@ export default function ProjectDetails() {
       <h2>GALERIA</h2>
 
       <Images>
-        {project.images?.map((image, index) => (
+        {images?.map((image, index) => (
           <CardImage key={index}>
             <h4>{image.name}</h4>
-            <img src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${image}`} alt={project.name} />
-
+            <img src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${image}`} alt={image.name} />
           </CardImage>
         ))}
       </Images>
@@ -145,7 +146,6 @@ export default function ProjectDetails() {
             <a href={`${process.env.REACT_APP_API_LOCAL}/files/projects/${doc.doc}`} target="_blank" rel="noopener noreferrer">
               <i><SiAdobeacrobatreader style={{ fontSize: '60px', margin: 0, color: '#ffffff' }} /></i>
             </a>
-
           </CardDocs>
         ))}
       </Docs>
@@ -169,11 +169,9 @@ export default function ProjectDetails() {
         onClose={handleClose}
       >
         <DialogContent>
-
-
-          DEseja mesmo avaliar esse projeto com uma nota de {rate.rating}?
+          Deseja mesmo avaliar esse projeto com uma nota de {rate.rating}?
           <button
-            onClick={(event) => handlesubmit(event)}
+            onClick={(event) => handleSubmit(event)}
           >
             avaliar
           </button>
@@ -183,9 +181,7 @@ export default function ProjectDetails() {
             cancelar
           </button>
         </DialogContent>
-
       </Dialog>
-
     </Container>
   );
 }

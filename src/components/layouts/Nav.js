@@ -1,14 +1,15 @@
-import { React, useContext, useEffect, useState, Fragment } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { Navi, ImageProfile, Photo, Dm, ListButton, XpImgUsr } from './nav.styled';
 import api from '../../utils/api';
 import Logo from '../../assets/dmcuter.png';
 import { Divider, List, ListItem, ListItemIcon, Tab, Tabs } from '@mui/material';
-import { Person, Badge, AddCircle, ExitToApp, Close, Feed, NotificationImportant, Folder } from '@mui/icons-material';
+import { Person, Badge, AddCircle, ExitToApp, Close, Feed, Folder, Public } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { Context } from '../../context/UserContext';
 import Avatar from '../../assets/avatar.jpg';
 import { styled } from '@mui/system';
-import { IoEarth } from 'react-icons/io5';
+
+
 export default function Nav() {
   const [user, setUser] = useState({});
   const [token] = useState(localStorage.getItem('token') || "");
@@ -226,7 +227,7 @@ export default function Nav() {
 
           <CustomTab value="feed" label={<Feed sx={{ color: '#cccccc' }} />} onClick={() => navTabFeed()}></CustomTab>
           <CustomTab value="forum" label={<Folder sx={{ color: '#cccccc' }} />} onClick={() => navTabForum()}></CustomTab>
-          <CustomTab value="search" label={<NotificationImportant sx={{ color: '#cccccc' }} />} onClick={() => navTabNews()}></CustomTab>
+          <CustomTab value="search" label={<Public sx={{ color: '#cccccc' }} />} onClick={() => navTabNews()}></CustomTab>
         </CustomTabs>
 
         <XpImgUsr>

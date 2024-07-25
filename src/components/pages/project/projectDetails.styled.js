@@ -5,8 +5,6 @@ export const Container = styled.div`
   flex-direction: column;
   text-align: center;
   align-items: center;
-  width: 70%;
-  background-color: #666666;
   margin: auto;
   padding-bottom: 20px;
 `;
@@ -46,7 +44,8 @@ export const Header = styled.div`
     height: 80px;
     width: 80px;
     border-radius: 50%;
-    margin-top: 10px;
+    margin-top: 1em;
+    margin-right: 1em;
   }
 
   p {
@@ -57,7 +56,7 @@ export const Header = styled.div`
 
   h1 {
     margin: 0;
-    color: #cccccc;
+    color: #333333;
   }
 `;
 
@@ -137,6 +136,8 @@ export const CardDocs = styled.div`
 export const CardUserInfo = styled.div`
   display: flex;
   padding: 2em;
+  background-color: #333333;
+  color: #cccccc;
 
   p {
     font-size: 12px;
@@ -145,5 +146,26 @@ export const CardUserInfo = styled.div`
 
   h4 {
     margin: 0;
+  }
+`;
+
+export const UserInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  border-left: solid 1px #999999;
+  padding-left: 0.5em;
+
+  p {
+    color: #cccccc;
+  }
+`;
+
+export const ImgUser = styled.div`
+width: auto;
+  img {
+    border: solid 2px #cccccc;
+  }
+  h4 {
+    text-align: center;
   }
 `;

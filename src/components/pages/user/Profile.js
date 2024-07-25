@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
 import api from "../../../utils/api";
-import { ImageProfile, InfoUser, Container, Social, AlterImage, InfoPersonal, SkillsPainel, Skill, SkillSelector, SaveButton } from "./profile.styled";
-import {
-  Cake, Delete, Email, Flag, FlipCameraIos, GitHub, Instagram, LinkedIn, LocationCity, Map,
-  PhotoCamera,
-  Transgender, WhatsApp
-} from "@mui/icons-material";
+import { ImageProfile, InfoUser, Container, Social, SkillsPainel, Skill, SkillSelector, SaveButton } from "./profile.styled";
+import { Delete, Email, GitHub, Instagram, LinkedIn, PhotoCamera} from "@mui/icons-material";
 import { Button, Dialog, DialogContent, DialogContentText, DialogTitle, Divider, ListItemButton, TextField } from "@mui/material";
 import Avatar from '../../../assets/avatar.jpg';
 import { useSnackbar } from "notistack";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { jwtDecode } from "jwt-decode";
+import DialogStyled from "../../layouts/DialogStyled";
 
 export default function Profile() {
   const [user, setUser] = useState({});
@@ -27,12 +24,10 @@ export default function Profile() {
   const [skills, setSkills] = useState([]);
   const [skillId, setSkillId] = useState('');
   const [skillName, setSkillName] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     proficiency: undefined,
     technology: ''
-  });
-  const [formData2, setFormData2] = useState({
-    image: '',
   });
 
   useEffect(() => {
@@ -161,7 +156,7 @@ export default function Profile() {
     const newdata = new FormData();
     newdata.append('image', formData.image);
 
-    const userId = getUserIdFromToken(token); // Obtendo o ID do usuário do token
+    const userId = getUserIdFromToken(token);
 
     try {
       const response = await api.patch(`/users/update/${userId}`, newdata, {
@@ -170,9 +165,9 @@ export default function Profile() {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
+
       console.log(response.data);
-  
+
       enqueueSnackbar(response.data.message, { variant: 'success' });
     } catch (error) {
       enqueueSnackbar(error.data.message, { variant: 'error' });
@@ -183,30 +178,30 @@ export default function Profile() {
   const getUserIdFromToken = (token) => {
     try {
       const decodedToken = jwtDecode(token);
-      return decodedToken.id; // Ajuste a chave conforme a estrutura do payload do seu token
+      return decodedToken.id;
     } catch (error) {
       console.error("Invalid token", error);
       return null;
     }
   };
 
+  const openDialog = () => setIsDialogOpen(true);
+  const closeDialog = () => setIsDialogOpen(false);
+
   return (
     <>
-
       <Container>
         <div style={{ minWidth: '640px', display: 'flex' }}>
           <InfoUser>
-            <p>{user.description}</p>
+          <h3>{`${user.name} ${user.surname}`}</h3>
             {user.image ? (<ImageProfile src={`${process.env.REACT_APP_API_LOCAL}/img/users/${user.image}`} alt={user.name} />) : (
               (<ImageProfile src={Avatar} alt={`${user.name}`} />)
             )}
 
             <label>
-              {selectedFileName && (
-                <p style={{ marginTop: '5px', width: '100%', height: '20px', backgroundColor: '#c1c1c1' }}>{selectedFileName}</p>
-              )}
+
               <label
-                htmlFor="imgInput" // Alteração aqui
+                htmlFor="imgInput"
                 style={{
                   padding: '5px',
                   backgroundColor: '#555',
@@ -214,14 +209,15 @@ export default function Profile() {
                   textTransform: 'uppercase',
                   textAlign: 'center',
                   display: 'block',
-                  marginTop: '10px',
                   cursor: 'pointer',
+                  borderRadius: '50%',
+                  paddingTop: '-5em'
                 }}
-              > <PhotoCamera sx={{ verticalAlign: 'middle' }} />   ADD FOTO </label>
+              > <PhotoCamera sx={{ verticalAlign: 'middle' }} /></label>
               {thumbImgUrl && (
-                <div style={{ marginTop: '5px' }}>
-                  <img src={thumbImgUrl} alt="image" style={{ maxWidth: '100px', maxHeight: '100px' }} />
-                </div>
+                  <div style={{ marginTop: '5px' }}>
+                    <img src={thumbImgUrl} alt="image" style={{ maxWidth: '100px', maxHeight: '100px' }} />
+                  </div>
               )}
 
               <input
@@ -235,8 +231,6 @@ export default function Profile() {
               {fileSelected && <SaveButton onClick={handleImgUpdate}>Salvar</SaveButton>} {/* Alteração aqui */}
 
             </label>
-
-            <h3>{`${user.name} ${user.surname}`}</h3>
 
             <Social>
               <a className="in" href={`${user.linkedin}`} target="_blank" rel="noopener noreferrer"><LinkedIn sx={{ fontSize: '30px' }} /></a>
@@ -274,10 +268,15 @@ export default function Profile() {
           >abrir</Button>
         </SkillsPainel>
 
+        <Button onClick={openDialog}>Open Dialog</Button>
+      <DialogStyled isOpen={isDialogOpen} onClose={closeDialog}>
+        <h2>Title</h2>
+        <p>This is an elegant and lightly transparent dialog box.</p>
+      </DialogStyled>
 
       </Container>
-      <Divider />
 
+      <Divider />
       <Dialog
         fullScreen={fullScreen}
         open={dialog}
