@@ -6,7 +6,7 @@ export const Navi = styled.nav`
     position: fixed;
     width: 100%;
     height: 5em;
-    background-color: #222222;
+    background-color: #111111;
     align-items: center;
     justify-content: center;
     display: flex;
@@ -37,6 +37,9 @@ export const Photo = styled.img`
     border-radius: 50%;
     border: solid 2px #cccccc;
     cursor: pointer;
+    position: relative;
+    bottom: -6px;
+    right: -17px;
 `;
 
 export const InfoUser = styled.div`
@@ -90,4 +93,11 @@ export const XpImgUsr = styled.div`
     align-items: center;
     display: flex;
     justify-content: center;
+`;
+
+export const Verifi = styled.img`
+    height: 1.7em;
+    margin: 0;
+    bottom: -5px;
+    position: relative;
 `;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../../utils/api";
-import { CardProject, Container, ProjectsWrapper } from "./allProjects.styled";
+import { CardProject, Container, ProjectsWrapper, ButtonStyled } from "./allProjects.styled";
 import { Link } from "react-router-dom";
 
 export default function AllProjects() {
@@ -28,7 +28,7 @@ export default function AllProjects() {
                 alt={project.name}
               />
             </Link>
-            <p>{project.link}</p>
+            <a>{project.link}</a>
             <p>{project.value}</p>
           </CardProject>
         ))}

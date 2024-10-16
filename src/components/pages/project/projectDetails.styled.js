@@ -10,7 +10,7 @@ export const Container = styled.div`
 `;
 
 export const ImgProject = styled.img`
-  max-width: 600px;
+  max-width: 300px;
 `;
 
 export const Skills = styled.div`

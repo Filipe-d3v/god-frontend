@@ -29,7 +29,6 @@ function UserProvider({ children }) {
 
     try {
       const data = await api.post('/users/register', user).then((response) => {
-        enqueueSnackbar('Cadasro Criado com Sucesso!', {variant: 'success'});
         enqueueSnackbar(response.data.message, { variant: 'success' });
         return response.data
       })

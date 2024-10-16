@@ -108,6 +108,7 @@ export const PostInfo = styled.div`
         margin: 0;
     }
     h5 {
+        margin: 0;
         color: #cccccc
     }
 
@@ -126,10 +127,12 @@ export const Button = styled.button`
     height: 40px;
     border-radius: 50%;
     border: none;
-    transition: 0.1s;
+    transition: 0.2s;
+    color: red;
+    background-color: transparent;
     &:hover {
     box-shadow: 0px 0px 8px 0px #000000;
-    scale: 1.2;
+    scale: 1.1;
     }
 
     &:after {
@@ -140,7 +143,7 @@ export const Button = styled.button`
     width: 0;
     height: 0;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.4);
+    
     animation: ${rippleAnimation} 0.6s linear;
     pointer-events: none;
   }

@@ -46,7 +46,7 @@ const DialogStyled = ({ isOpen, onClose, children }) => {
   return (
     <StyledOverlay isOpen={isOpen} onDismiss={onClose}>
       <StyledDialogContent aria-label="dialog">
-        <CloseButton onClick={onClose}>&times;</CloseButton>
+        <button onClick={onClose}>X</button>
         {children}
       </StyledDialogContent>
     </StyledOverlay>

@@ -56,3 +56,15 @@ export const Button = styled.button`
     background-color: #45a049;
   }
 `;
+
+export const ButtonStyled = styled.button`
+  transition: 0.3s;
+  width: 100%;
+  background-color: #4f5c;
+  border-radius: 5px;
+
+  &:hover{
+    cursor: pointer;
+    scale: 1.1;
+  }
+`;

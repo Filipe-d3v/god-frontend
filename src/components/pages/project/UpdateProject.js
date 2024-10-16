@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CardImage, Container, Docs, Header, Images, ListSkills, SkillPainel } from './updateProject.styled';
+import { CardImage, Container, Docs, Header, Images, ListSkills, SelectedImages, SkillPainel } from './updateProject.styled';
 import { useParams } from "react-router-dom";
 import api from "../../../utils/api";
 import { Button, Checkbox, Fade, ListItemButton, TextField } from "@mui/material";
@@ -9,29 +9,21 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { useSnackbar } from "notistack";
 import { CardDocs } from "./projectDetails.styled";
 import { SiAdobeacrobatreader } from "react-icons/si";
+import SkillSelector from "../../layouts/skillSelector";
 
 export default function UpdateProject() {
   const [project, setProject] = useState({});
   const [token] = useState(localStorage.getItem('token') || '');
   const [isEditing, setIsEditing] = useState(false);
   const [thumbImgUrl, setThumbImgUrl] = useState('');
-  const [thumbImgUrlGaleria, setThumbImgUrlGaleria] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
-  const [selectedFileNameImagesGaleria, setSelectedFileNameImagesGaleria] = useState([]);
   const [skills, setSkills] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
   const [images, setImages] = useState([]);
   const [docs, setDocs] = useState([]);
   const [checked, setChecked] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    desc: '',
-    value: '',
-    image: null,
-    images: [],
-    link: '',
-    projectSkills: [],
-  });
+  const [preview, setPreview] = useState([]);
+  const [formData, setFormData] = useState({});
 
   const { id } = useParams();
 
@@ -49,7 +41,7 @@ export default function UpdateProject() {
         images: response.data.project.images,
         link: response.data.project.link,
         value: response.data.project.value,
-        projectSkills: response.data.project.projectSkills,
+        projectSkills: response.data.project.projectSkills || [],
       });
     });
   }, [id, token]);
@@ -104,34 +96,22 @@ export default function UpdateProject() {
     }
   };
 
-  const handleFilesChange = (event, fieldName) => {
-    const selectedFiles = event.target.files;
+  function onFileChange(e) {
+    const files = Array.from(e.target.files);
 
-    if (fieldName === 'images') {
-      // Converte o FileList em um array de arquivos
-      const filesArray = Array.from(selectedFiles);
+    // Filtra apenas os itens que são do tipo File
+    const validFiles = files.filter((file) => file instanceof File);
 
-      // Atualiza o estado formData para armazenar múltiplas imagens
-      setFormData({
-        ...formData,
-        images: filesArray,
-      });
+    if (validFiles.length > 0) {
+      // Cria URLs de objeto apenas para arquivos válidos
+      const previews = validFiles.map((file) => URL.createObjectURL(file));
+      setPreview(previews);
 
-      // Exibe os nomes das imagens selecionadas
-      let selectedNames = '';
-      for (let i = 0; i < filesArray.length; i++) {
-        selectedNames += filesArray[i].name + ', ';
-      }
-      setSelectedFileNameImagesGaleria(selectedNames.slice(0, -2)); // Remove a última vírgula e espaço
-
-      // O código abaixo é opcional, para exibir uma prévia das imagens selecionadas
-      const readerimg = new FileReader();
-      readerimg.onload = () => {
-        setThumbImgUrlGaleria(readerimg.result);
-      };
-      readerimg.readAsDataURL(filesArray[0]); // Exibe apenas a primeira imagem selecionada
+      // Atualiza o state do projeto com os arquivos válidos
+      setProject({ ...project, images: validFiles });
     }
-  };
+  }
+
 
   const handleTextChange = (event, fieldName) => {
     setFormData({
@@ -157,7 +137,7 @@ export default function UpdateProject() {
   };
 
   const renderSkillItem = (skill) => {
-    const isSkillSelected = formData.projectSkills.some((selectedSkill) => selectedSkill._id === skill._id);
+    const isSkillSelected = formData.projectSkills?.some((selectedSkill) => selectedSkill._id === skill._id) || false;
 
     return (
       <div key={skill._id} onClick={() => handleSkillClick(skill)}>
@@ -167,18 +147,50 @@ export default function UpdateProject() {
         </ListItemButton>
       </div>
     );
+  }
+
+  const addImages = async (e) => {
+    e.preventDefault();
+  
+    const formDataImg = new FormData();
+  
+    // Adiciona outras informações do projeto, se necessário
+    Object.keys(project).forEach((key) => {
+      if (key !== 'images') {
+        formDataImg.append(key, project[key]);
+      }
+    });
+  
+    // Adiciona as imagens (verifica se são realmente arquivos)
+    if (project.images && project.images.length > 0) {
+      project.images.forEach((image) => {
+        if (image instanceof File) {
+          formDataImg.append('images', image); // Apenas adiciona arquivos válidos
+        }
+      });
+    }
+  
+    try {
+      const response = await api.patch(`/projects/addimages/${id}`, formDataImg, {
+        headers: {
+          Authorization: `Bearer ${JSON.parse(token)}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      enqueueSnackbar(response.data.message, { variant: 'success' });
+    } catch (error) {
+      enqueueSnackbar(error.response?.data?.message || 'Erro ao enviar os dados', { variant: 'error' });
+    }
   };
+  
+
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Evita o comportamento padrão do formulário
+    event.preventDefault();
 
     const newdata = new FormData();
-    newdata.append('image', formData.image); // Envio da imagem principal
-
-    // Envio de múltiplas imagens
-    formData.images.forEach((image) => {
-      newdata.append('images', image);
-    });
+    newdata.append('image', formData.image);
 
     newdata.append('name', formData.name);
     newdata.append('desc', formData.desc);
@@ -194,11 +206,9 @@ export default function UpdateProject() {
         },
       });
 
-      console.log(response.data);
-
       enqueueSnackbar(response.data.message, { variant: 'success' });
     } catch (error) {
-      enqueueSnackbar(error.data.message, { variant: 'error' });
+      enqueueSnackbar(error.reponse.data.message, { variant: 'error' });
     }
   };
 
@@ -211,21 +221,11 @@ export default function UpdateProject() {
       <h1>{project.name}</h1>
       <Header>
         <img src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${project.image}`} alt={project.name} />
-      </Header>
-      <div style={{ display: 'flex' }}>
-        {project.projectSkills?.map((skill, index) => (
-          <SkillPainel key={index}>
-            <img src={`${process.env.REACT_APP_API_LOCAL}/img/skills/${skill.icon}`} alt={skill.name} />
-          </SkillPainel>
-        ))}
-      </div>
-      <h4>{project.desc}</h4>
-      <Images>
-        {selectedFileNameImagesGaleria && (
-          <p style={{ marginTop: '5px', width: '100%', height: '20px', backgroundColor: '#c1c1c1' }}>{selectedFileNameImagesGaleria.length}</p>
+        {selectedFileName && (
+          <p style={{ marginTop: '5px', width: '100%', height: '20px', backgroundColor: '#c1c1c1' }}>{selectedFileName}</p>
         )}
         <label
-          htmlFor="imgInputGaleria"
+          htmlFor="imgInput"
           style={{
             padding: '5px',
             backgroundColor: '#555',
@@ -239,32 +239,79 @@ export default function UpdateProject() {
         >
           <AddAPhoto sx={{ verticalAlign: 'middle' }} />
         </label>
-        {thumbImgUrlGaleria && (
+        {thumbImgUrl && (
           <div style={{ marginTop: '5px' }}>
-            <img src={thumbImgUrlGaleria} alt="image" style={{ maxWidth: '100px', maxHeight: '100px' }} />
+            <img src={thumbImgUrl} alt="image" style={{ maxWidth: '100px', maxHeight: '100px' }} />
           </div>
         )}
 
         <input
-          multiple
           type="file"
-          id="imgInputGaleria"
-          name="imgInputGaleria"
+          id="imgInput"
+          name="imgInput"
           accept="image/*"
-          onChange={(e) => handleFilesChange(e, 'images')}
+          onChange={(e) => handleFileChange(e, 'image')}
           style={{ display: 'none' }}
         />
-        {!project.images ? (<h2>Nenhuma imagem ainda</h2>) : (
-          <>
-            {project.images?.map((image, index) => (
-              <CardImage key={index}>
-                <img src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${image}`} alt={project.name} />
-
-              </CardImage>
-            ))}
-          </>
-        )}
+      </Header>
+      <div style={{ display: 'flex' }}>
+        {project.projectSkills?.map((skill, index) => (
+          <SkillPainel key={index}>
+            <img src={`${process.env.REACT_APP_API_LOCAL}/img/skills/${skill.icon}`} alt={skill.name} />
+          </SkillPainel>
+        ))}
+      </div>
+      <h4>{project.desc}</h4>
+      <Images>
+        {/* Exibe as imagens existentes do projeto, mas só se não houver imagens novas no preview */}
+        {preview.length === 0 && project.images?.map((image, index) => (
+          <img
+            src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${image}`}
+            alt={`project-${index}`}
+            key={index}
+            style={{ maxWidth: '100px', maxHeight: '100px' }}
+          />
+        ))}
       </Images>
+
+      <SelectedImages>
+        {/* Exibe o preview das novas imagens selecionadas */}
+        {preview.length > 0 && preview.map((image, index) => (
+          <img
+            src={image}
+            alt={`preview-${index}`}
+            key={index}
+            style={{ maxWidth: '100px', maxHeight: '100px' }}
+          />
+        ))}
+      </SelectedImages>
+
+
+      <label
+        htmlFor='files'
+        style={{
+          cursor: 'pointer',
+          display: 'inline-block',
+          padding: '10px',
+          backgroundColor: '#555',
+          borderRadius: '50%'
+        }}
+      >
+        <AddAPhoto sx={{ color: '#fff', fontSize: '24px' }} />
+      </label>
+
+      <input
+        id='files'
+        type="file"
+        name="images"
+        onChange={onFileChange}
+        multiple={true}
+        style={{ display: 'none' }} // Esconder o input
+      />
+      <Button onClick={addImages}>
+        add images
+      </Button>
+
 
       <Docs>
         {!docs ? (<h2>Nenhum documento ainda</h2>) : (
@@ -310,38 +357,7 @@ export default function UpdateProject() {
         onChange={(e) => handleTextChange(e, 'desc')}
         style={{ width: '98%', minHeight: '60px' }}
       />
-      {selectedFileName && (
-        <p style={{ marginTop: '5px', width: '100%', height: '20px', backgroundColor: '#c1c1c1' }}>{selectedFileName}</p>
-      )}
-      <label
-        htmlFor="imgInput"
-        style={{
-          padding: '5px',
-          backgroundColor: '#555',
-          color: '#fff',
-          textTransform: 'uppercase',
-          textAlign: 'center',
-          display: 'block',
-          marginTop: '10px',
-          cursor: 'pointer',
-        }}
-      >
-        <AddAPhoto sx={{ verticalAlign: 'middle' }} />
-      </label>
-      {thumbImgUrl && (
-        <div style={{ marginTop: '5px' }}>
-          <img src={thumbImgUrl} alt="image" style={{ maxWidth: '100px', maxHeight: '100px' }} />
-        </div>
-      )}
 
-      <input
-        type="file"
-        id="imgInput"
-        name="imgInput"
-        accept="image/*"
-        onChange={(e) => handleFileChange(e, 'image')}
-        style={{ display: 'none' }}
-      />
 
       <ListSkills>
         {skills.map((skill) => renderSkillItem(skill))}
@@ -387,6 +403,7 @@ export default function UpdateProject() {
           <Close />
         </Button>
       </div>
+      <SkillSelector />
     </Container>
   );
 }

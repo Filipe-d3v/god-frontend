@@ -1,13 +1,14 @@
 import { React, useContext, useEffect, useState } from 'react';
-import { Navi, ImageProfile, Photo, Dm, ListButton, XpImgUsr } from './nav.styled';
+import { Navi, ImageProfile, Photo, Dm, ListButton, XpImgUsr, Verifi } from './nav.styled';
 import api from '../../utils/api';
-import Logo from '../../assets/dmcuter.png';
+import Logo from '../../assets/god.png';
 import { Divider, List, ListItem, ListItemIcon, Tab, Tabs } from '@mui/material';
-import { Person, Badge, AddCircle, ExitToApp, Close, Feed, Folder, Public } from '@mui/icons-material';
+import { Person, Badge, AddCircle, ExitToApp, Close, Feed, Folder, Public, Verified } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { Context } from '../../context/UserContext';
 import Avatar from '../../assets/avatar.jpg';
 import { styled } from '@mui/system';
+import Verified2 from '../../assets/verified.png';
 
 
 export default function Nav() {
@@ -202,7 +203,7 @@ export default function Nav() {
     return navigate('/allprojects')
   }
   function navTabNews() {
-    return navigate('/news')
+    return navigate('/public')
   }
 
   const CustomTabs = styled(Tabs)({
@@ -235,8 +236,11 @@ export default function Nav() {
           <ImageProfile onClick={setWidth}>
             {user.image ? (<Photo src={`${process.env.REACT_APP_API_LOCAL}img/users/${user.image}`} alt={user.name} />) :
               (<Photo src={Avatar} alt='Avatar' />)}
-            <p style={{ color: 'white', fontSize: '13px'}}>@{user.username}</p>
-            <p style={{ color: '#00ce6a', fontSize: '12px' }}>{user.xp} XP</p>
+
+            <div style={{position: 'relative', top: '-6px', textAlign: 'center'}}>
+              <p style={{ color: 'white', fontSize: '13px' }}>{!user.verified ? (<></>) : (<Verifi src={Verified2} alt='verified' />)}  @{user.username}</p>
+              <p style={{ color: '#00ce6a', fontSize: '12px', alignSelf: 'end' }}>{user.xp} XP</p>
+            </div>
           </ImageProfile>
         </XpImgUsr>
       </Navi>

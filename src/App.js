@@ -14,6 +14,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 import UpdateProject from './components/pages/project/UpdateProject';
 import AllProjects from './components/pages/project/AllProjects';
+import Pubic from './components/pages/public/Public';
 
 const theme = createTheme();
 
@@ -34,6 +35,7 @@ function App() {
                 <Route path='/projectdetails/:id' element={<ProjectDetails />} />
                 <Route path='/userdetails/:id' element={<UserDetails />} />
                 <Route path='/updateproject/:id' element={<UpdateProject />} />
+                <Route path='/public' element={<Pubic />} />
               </Route>
             </Routes>
             <Footer />

@@ -10,8 +10,12 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { Link } from "react-router-dom";
-import { Add, Check, CheckRounded, Close, SentimentDissatisfied } from "@mui/icons-material";
+import { Add, Check, CheckRounded, Close, Delete, SentimentDissatisfied } from "@mui/icons-material";
 import Avatar from '../../../assets/avatar.jpg';
+import {jwtDecode} from 'jwt-decode';
+import Verified2 from '../../../assets/verified.png'
+import { Verifi } from "../../layouts/nav.styled";
+import Verified from "../../layouts/verified";
 
 export default function FeedP() {
   const [posts, setPosts] = useState([]);
@@ -27,6 +31,20 @@ export default function FeedP() {
     subtitle: '',
     project: ''
   });
+  const [userId, setUserId] = useState(null);
+
+  const getUserFromToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.id;
+    } catch (error) {
+      console.error('Token inválido', error);
+      return null;
+    }
+  };
 
 
   useEffect(() => {
@@ -37,6 +55,7 @@ export default function FeedP() {
     })
       .then((response) => {
         setPosts(response.data.posts)
+        setUserId(getUserFromToken())
       })
   }, [token]);
 
@@ -106,6 +125,21 @@ export default function FeedP() {
     formData.subtitle = '';
   }
 
+  const handleDeleteClick = async (postId) => {
+
+    try {
+      const response = await api.delete(`/posts/delete/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${JSON.parse(token)}`
+        }
+      })
+      enqueueSnackbar(response.data.message, { variant: 'success' });
+
+    } catch (error) {
+      enqueueSnackbar(error.data.message, { variant: 'error' });
+    }
+  }
+
   return (
 
     <Container>
@@ -155,13 +189,17 @@ export default function FeedP() {
             <PostInfo>
               <div style={{ marginLeft: '10px' }}>
                 <Link style={{ textDecoration: 'none', color: '#111111' }} to={`/userdetails/${post.owner._id}`}>
-                <h4>{`${post.owner.name} ${post.owner.surname}`}</h4>
+                  
+                  <h5>@{post.owner.username} {!post.owner.verified ? (<></>) : (<Verified />)}</h5>
                 </Link>
                 <h6>{post.date}</h6>
                 <h5>{post.subtitle}</h5>
               </div>
-
             </PostInfo>
+
+            {userId === post.owner._id && (
+            <Button onClick={() => handleDeleteClick(post._id)}><Delete /></Button>
+          )}
           </HeaderPost>
           <Divider />
           <Link style={{ textDecoration: 'none' }} to={`/projectdetails/${post.project._id}`}>

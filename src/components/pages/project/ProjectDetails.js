@@ -21,7 +21,7 @@ export default function ProjectDetails() {
   const [dialog, setDialog] = useState(false);
   const [rate, setRate] = useState({
     rating: 0,
-    project: id
+    project: id,
   });
 
   useEffect(() => {
@@ -63,20 +63,21 @@ export default function ProjectDetails() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const newdata = new FormData();
-    newdata.append('rating', rate.rating);
-    newdata.append('project', rate.project);
+    const newdata = {
+      rating: rate.rating,
+      project: rate.project,
+    }
 
     try {
-      const response = await api.post('/ratings/create', newdata, {
+      const response = await api.post('ratings/create', newdata, {
         headers: {
           Authorization: `Bearer ${JSON.parse(token)}`
         }
       });
-
+     
       enqueueSnackbar(response.data.message, { variant: 'success' });
     } catch (error) {
-      enqueueSnackbar(error.message, { variant: 'error' });
+      enqueueSnackbar(error.response.data.message, { variant: 'error' });
     }
   };
 
@@ -149,7 +150,7 @@ export default function ProjectDetails() {
           </CardDocs>
         ))}
       </Docs>
-
+        {}
       <Rating
         precision={0.5}
         onClick={() => handleClickOpen()}
@@ -171,7 +172,7 @@ export default function ProjectDetails() {
         <DialogContent>
           Deseja mesmo avaliar esse projeto com uma nota de {rate.rating}?
           <button
-            onClick={(event) => handleSubmit(event)}
+            onClick={handleSubmit}
           >
             avaliar
           </button>
