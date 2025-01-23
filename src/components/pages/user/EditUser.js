@@ -20,6 +20,11 @@ export default function Edituser() {
   const { enqueueSnackbar } = useSnackbar();
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
+    name: '',
+    surname: '',
+    username: '',
+    email: '',
+    stack: ''
   });
 
   useEffect(() => {
@@ -36,7 +41,7 @@ export default function Edituser() {
         email: response.data.email,
         github: response.data.github,
         instagram: response.data.instagram,
-        stack: response.data.stack,
+        stack: response.data.stack || '',
         gender: response.data.gender,
         linkedin: response.data.linkedin
     })
@@ -212,10 +217,11 @@ export default function Edituser() {
                     name="stack"
                     size="small"
                     variant="outlined"
+                    value={formData.stack}
                     onChange={(e) => handleTextChange(e, 'stack')}
                     sx={{ marginBottom: '5px' }}
                 >
-                    <OptionStyled value="" disabled>Selecione sua stack</OptionStyled>
+                    <OptionStyled value="">Selecione sua stack</OptionStyled>
                     <OptionStyled value="Desenvolvedor Web Fullstack">Desenvolvedor Web Fullstack</OptionStyled>
                     <OptionStyled value="Desenvolvedor Web FrontEnd">Desenvolvedor Web FrontEnd</OptionStyled>
                     <OptionStyled value="Desenvolvedor Web BackEnd">Desenvolvedor Web BackEnd</OptionStyled>

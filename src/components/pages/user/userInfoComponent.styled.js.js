@@ -4,8 +4,8 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #121212; /* Fundo escuro */
-  color: #f0f0f0; /* Texto claro */
+  background-color: #121212;
+  color: #f0f0f0;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);

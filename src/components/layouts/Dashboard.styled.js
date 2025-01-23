@@ -14,11 +14,26 @@ export const NotificationBar = styled.div`
   padding: 10px;
   border-radius: 5px;
   height: 150px;
+  overflow-y: auto;
+  padding-left: 5em;
+  padding-right: 50px;
 
   img {
     height: 40px;
     border-radius: 50%;
     border: 1px solid #fff;
+  }
+
+  &::-webkit-scrollbar{
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track{
+   background: #3a3a3c;
+   padding: 1px;
+  }
+  &::-webkit-scrollbar-thumb{
+    background: #888;
+    border-radius: 10px;
   }
 `;
 
@@ -63,6 +78,7 @@ export const Note = styled.div`
   border: solid 1px #555;
   border-radius: 5px;
   padding: 5px;
+  margin: 3px;
   background-color: #6666;
   box-shadow: -2px 4px 4px -2px #000000;
 
@@ -77,6 +93,8 @@ export const CardProject = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  align-items: center;
+  border: 2px solid #cccccc;
   
   h4 {
     margin: 0;
@@ -94,5 +112,6 @@ export const CardProject = styled.div`
     max-width: 100%;
     object-fit: contain;
     align-self: flex-start;
+    border-radius: 50%;
   }
 `;

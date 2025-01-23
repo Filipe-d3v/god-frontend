@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [notifications, setNotification] = useState([]);
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [projects, setProjects] = useState([]);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     if (token) {
@@ -33,7 +34,18 @@ const Dashboard = () => {
     } else {
       console.error("Token de autenticação está vazio ou inválido.");
     }
-  }, [token]);
+
+    api.get('/users/topusers', {
+      headers: {
+        Authorization: `Bearer ${JSON.parse(token)}`
+      }
+    }).then((response) => {
+      setUsers(response.data)
+    }).catch((error) => {
+      console.log('Erro!', error)
+    })
+  }
+  , [token]);
 
   return (
     <DashboardContainer>
@@ -72,12 +84,11 @@ const Dashboard = () => {
         </RankingCard>
         <RankingCard>
           <RankingTitle>Top Users</RankingTitle>
-          {/* {topUsers.map((user, index) => (
-            <RankingItem key={index}>
-              <ItemName>{index + 1}. {user.name}</ItemName>
-              <ItemScore>{user.xp} XP</ItemScore>
-            </RankingItem>
-          ))} */}
+          {users?.map((user) => (
+            <div key={user._id}>
+              {user.username}
+            </div>
+          ))}
         </RankingCard>
       </RankingSection>
     </DashboardContainer>

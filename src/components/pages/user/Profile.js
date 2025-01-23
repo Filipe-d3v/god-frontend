@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../../../utils/api";
-import { 
-  ImageProfile, InfoUser, Container, Social, SkillsPainel, 
-  Skill, SkillSelector, SaveButton, ImgName, InfoPersonal 
+import {
+  ImageProfile, InfoUser, Container, Social, SkillsPainel,
+  Skill, SkillSelector, SaveButton, ImgName, InfoPersonal
 } from "./profile.styled";
 import { Delete, Email, GitHub, Instagram, LinkedIn, Phone, PhotoCamera } from "@mui/icons-material";
 import { Button, Dialog, DialogContent, DialogContentText, DialogTitle, Divider, ListItemButton, TextField } from "@mui/material";
@@ -10,12 +10,12 @@ import Avatar from '../../../assets/avatar.jpg';
 import { useSnackbar } from "notistack";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 import UserInfoComponent from "./UserInfoComponent";
 import Edituser from "./EditUser";
 
 export default function Profile() {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const [token] = useState(localStorage.getItem('token') || "");
   const [levels, setLevels] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
@@ -37,7 +37,7 @@ export default function Profile() {
   useEffect(() => {
     api.get('/skills/getall', {
       headers: {
-        Authorization: `Bearer ${JSON.parse(token)}`
+        Authorization: `Bearer ${JSON.parse(token)}` 
       }
     }).then((response) => {
       setSkills(response.data.skills);
@@ -62,11 +62,11 @@ export default function Profile() {
     try {
       const response = await api.post('levels/create', newData, {
         headers: {
-          Authorization: `Bearer ${JSON.parse(token)}`
+          Authorization: `Bearer ${JSON.parse(token)}` 
         },
       });
       enqueueSnackbar(response.data.message, { variant: 'success' });
-      setLevels([...levels, response]);
+      setLevels([...levels, response.data.level]); // Atualize o estado com a nova skill
 
     } catch (error) {
       enqueueSnackbar(error.response.data.message, { variant: 'error' });
@@ -89,7 +89,7 @@ export default function Profile() {
   useEffect(() => {
     api.get('/users/checkuser/profile', {
       headers: {
-        Authorization: `Bearer ${JSON.parse(token)}`
+        Authorization: `Bearer ${JSON.parse(token)}` 
       }
     }).then((response) => {
       setUser(response.data);
@@ -99,7 +99,7 @@ export default function Profile() {
   useEffect(() => {
     api.get('/levels/getmyskills', {
       headers: {
-        Authorization: `Bearer ${JSON.parse(token)}`
+        Authorization: `Bearer ${JSON.parse(token)}` 
       }
     }).then((response) => {
       setLevels(response.data.levels);
@@ -110,58 +110,12 @@ export default function Profile() {
     try {
       const response = await api.delete(`/levels/delete/${levelId}`, {
         headers: {
-        Authorization: `Bearer ${JSON.parse(token)}`
+          Authorization: `Bearer ${JSON.parse(token)}` 
         }
       });
       enqueueSnackbar(response.data.message, { variant: 'success' });
       const updatedSkills = levels.filter((level) => level._id !== levelId);
       setLevels(updatedSkills);
-    } catch (error) {
-      enqueueSnackbar(error.response.data.message, { variant: 'error' });
-    }
-  };
-
-  const handleFileChange = (event, fieldName) => {
-    const selectedFile = event.target.files[0];
-    if (event.target.files.length > 0) {
-      setFileSelected(true);
-      openDialog(true);
-    } else {
-      setFileSelected(false);
-    }
-
-    if (fieldName === 'image') {
-      setFormData({
-        ...formData,
-        image: selectedFile,
-      });
-
-      setSelectedFileName(selectedFile.name);
-
-      const readerimg = new FileReader();
-      readerimg.onload = () => {
-        setThumbImgUrl(readerimg.result);
-      };
-      readerimg.readAsDataURL(selectedFile);
-    }
-  };
-
-  const handleImgUpdate = async (event) => {
-    event.preventDefault();
-    const newdata = new FormData();
-    newdata.append('image', formData.image);
-
-    const userId = getUserIdFromToken(token);
-
-    try {
-      const response = await api.patch(`/users/update/${userId}`, newdata, {
-        headers: {
-          Authorization: `Bearer ${JSON.parse(token)}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      enqueueSnackbar(response.data.message, { variant: 'success' });
     } catch (error) {
       enqueueSnackbar(error.response.data.message, { variant: 'error' });
     }
@@ -184,92 +138,13 @@ export default function Profile() {
     setFileSelected(false);
   };
 
+  if (!user) {
+    return <div>Carregando...</div>; // Renderize um estado de carregamento enquanto os dados não estão disponíveis
+  }
+
   return (
     <>
-      <Container>
-         {/*
-        <InfoUser>
-         
-          <ImgName>
-            <h3>{`${user.name} ${user.surname}`}</h3>
-            {user.image ? (
-              <ImageProfile src={`${process.env.REACT_APP_API_LOCAL}/img/users/${user.image}`} alt={user.name} />
-            ) : (
-              <ImageProfile src={Avatar} alt={user.name} />
-            )}
-
-            <label>
-              <label
-                htmlFor="imgInput"
-                style={{
-                  padding: '5px',
-                  backgroundColor: '#555',
-                  color: '#fff',
-                  textTransform: 'uppercase',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  borderRadius: '50%',
-                }}
-              >
-                <PhotoCamera sx={{ verticalAlign: 'middle' }} />
-              </label>
-              {thumbImgUrl && (
-                <Dialog open={isDialogOpen} onClose={closeDialog}>
-                  <div style={{ marginTop: '5px' }}>
-                    <img src={thumbImgUrl} alt="preview" />
-                  </div>
-                  {fileSelected && <SaveButton onClick={handleImgUpdate}>Salvar</SaveButton>}
-                </Dialog>
-              )}
-
-              <input
-                onClick={clearFile}
-                type="file"
-                id="imgInput"
-                name="imgInput"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, 'image')}
-                style={{ display: 'none' }}
-              />
-            </label>
-            <h4>{user.stack}</h4>
-
-            <Social>
-              <a className="in" href={user.linkedin} target="_blank" rel="noopener noreferrer">
-                <LinkedIn sx={{ fontSize: '30px' }} />
-              </a>
-              <a className='git' href={user.github} target="_blank" rel="noopener noreferrer">
-                <GitHub sx={{ fontSize: '30px' }} />
-              </a>
-              <a className='insta' href={user.instagram} target="_blank" rel="noopener noreferrer">
-                <Instagram sx={{ fontSize: '30px' }} />
-              </a>
-            </Social>
-          </ImgName>
-         
-        </InfoUser>
-
-        <SkillsPainel>
-          {levels?.map((level) => (
-            <>
-              <Skill>
-                <p key={level._id}>Skill: {level.technology.name}</p>
-                <p>Proficiency: {level.proficiency}</p>
-                <Delete
-                  key={level._id}
-                  sx={{ cursor: "pointer", color: 'red' }}
-                  onClick={() => handleDeleteClick(level._id)}
-                />
-              </Skill>
-              <Divider />
-            </>
-          ))}
-        </SkillsPainel>
-
-        <SaveButton onClick={handleClickOpen}>Adicionar nova skill</SaveButton>
-         */}
-      </Container>
-{/*
+      <SaveButton onClick={handleClickOpen}>Adicionar nova skill</SaveButton>
       <Dialog
         fullScreen={fullScreen}
         open={dialog}
@@ -303,15 +178,30 @@ export default function Profile() {
                 </ListItemButton>
               ))}
             </SkillSelector>
+            <Container>
+              <SkillsPainel>
+                {levels?.map((level, index) => (
+                  <div key={level?._id || index}>
+                    <Skill>
+                      <p>Skill: {level?.technology?.name || 'N/A'}</p>
+                      <p>Proficiency: {level?.proficiency}</p>
+                      <Delete
+                        key={level?._id}
+                        sx={{ cursor: "pointer", color: 'red' }}
+                        onClick={() => handleDeleteClick(level?._id)}
+                      />
+                    </Skill>
+                  </div>
+                ))}
+              </SkillsPainel>
+            </Container>
           </DialogContentText>
         </DialogContent>
         <Button autoFocus onClick={handleSubmit}>
           Salvar
         </Button>
-      </Dialog>*/}
-      <UserInfoComponent>
-        
-      </UserInfoComponent>
+      </Dialog>
+      <UserInfoComponent />
       <Edituser />
     </>
   );

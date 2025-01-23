@@ -1,28 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { CardImage, Container, Docs, Header, Images, ListSkills, SelectedImages, SkillPainel } from './updateProject.styled';
+import { Container, Docs, Header, Images, Inputs, ListSkills, SectionStyled, SelectedImages } from './updateProject.styled';
 import { useParams } from "react-router-dom";
 import api from "../../../utils/api";
-import { Button, Checkbox, Fade, ListItemButton, TextField } from "@mui/material";
-import { AddAPhoto, Check, CheckBox, Close } from "@mui/icons-material";
+import { Button, Dialog, DialogContent, DialogTitle, Fade, ListItemButton, TextareaAutosize, TextField } from "@mui/material";
+import { AddAPhoto, Check, Close } from "@mui/icons-material";
 import CheckIcon from '@mui/icons-material/Check';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { useSnackbar } from "notistack";
-import { CardDocs } from "./projectDetails.styled";
-import { SiAdobeacrobatreader } from "react-icons/si";
-import SkillSelector from "../../layouts/skillSelector";
 
 export default function UpdateProject() {
   const [project, setProject] = useState({});
   const [token] = useState(localStorage.getItem('token') || '');
-  const [isEditing, setIsEditing] = useState(false);
   const [thumbImgUrl, setThumbImgUrl] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
   const [skills, setSkills] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
-  const [images, setImages] = useState([]);
-  const [docs, setDocs] = useState([]);
   const [checked, setChecked] = useState(false);
   const [preview, setPreview] = useState([]);
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
+  const [fileSelected, setFileSelected] = useState(false);
   const [formData, setFormData] = useState({});
 
   const { id } = useParams();
@@ -47,31 +43,6 @@ export default function UpdateProject() {
   }, [id, token]);
 
   useEffect(() => {
-    api.get(`/imagesproject/getimages/${id}`, {
-      headers: {
-        Authorization: `Bearer ${JSON.parse(token)}`
-      }
-    }).then((response) => {
-      setImages(response.data.docs)
-    })
-  }, [id, token]);
-
-  useEffect(() => {
-    api.get(`/docsproject/getdocs/${id}`, {
-      headers: {
-        Authorization: `Bearer ${JSON.parse(token)}`
-      }
-    }).then((response) => {
-      setDocs(response.data.docs)
-    })
-  }, [id, token]);
-
-
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
-
-  useEffect(() => {
     api.get('/skills/getall').then((response) => {
       setSkills(response.data.skills)
     })
@@ -85,14 +56,16 @@ export default function UpdateProject() {
         ...formData,
         image: selectedFile,
       });
-
+      setFileSelected(true);
+      setIsPreviewDialogOpen(true);
       setSelectedFileName(selectedFile.name);
-
       const readerimg = new FileReader();
       readerimg.onload = () => {
         setThumbImgUrl(readerimg.result);
       };
       readerimg.readAsDataURL(selectedFile);
+    } else {
+      setFileSelected(false);
     }
   };
 
@@ -151,16 +124,16 @@ export default function UpdateProject() {
 
   const addImages = async (e) => {
     e.preventDefault();
-  
+
     const formDataImg = new FormData();
-  
+
     // Adiciona outras informações do projeto, se necessário
     Object.keys(project).forEach((key) => {
       if (key !== 'images') {
         formDataImg.append(key, project[key]);
       }
     });
-  
+
     // Adiciona as imagens (verifica se são realmente arquivos)
     if (project.images && project.images.length > 0) {
       project.images.forEach((image) => {
@@ -169,7 +142,7 @@ export default function UpdateProject() {
         }
       });
     }
-  
+
     try {
       const response = await api.patch(`/projects/addimages/${id}`, formDataImg, {
         headers: {
@@ -177,14 +150,12 @@ export default function UpdateProject() {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
+
       enqueueSnackbar(response.data.message, { variant: 'success' });
     } catch (error) {
       enqueueSnackbar(error.response?.data?.message || 'Erro ao enviar os dados', { variant: 'error' });
     }
   };
-  
-
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -216,14 +187,16 @@ export default function UpdateProject() {
     setChecked(event.target.checked);
   };
 
+  const clearFile = () => {
+    setFileSelected(false);
+  };
+
+  const closePreview = () => {
+    setIsPreviewDialogOpen(false);
+  }
   return (
     <Container>
-      <h1>{project.name}</h1>
       <Header>
-        <img src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${project.image}`} alt={project.name} />
-        {selectedFileName && (
-          <p style={{ marginTop: '5px', width: '100%', height: '20px', backgroundColor: '#c1c1c1' }}>{selectedFileName}</p>
-        )}
         <label
           htmlFor="imgInput"
           style={{
@@ -237,14 +210,74 @@ export default function UpdateProject() {
             cursor: 'pointer',
           }}
         >
-          <AddAPhoto sx={{ verticalAlign: 'middle' }} />
+          <img src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${project.image}`} alt={project.name} />
         </label>
-        {thumbImgUrl && (
-          <div style={{ marginTop: '5px' }}>
-            <img src={thumbImgUrl} alt="image" style={{ maxWidth: '100px', maxHeight: '100px' }} />
-          </div>
+        {selectedFileName && (
+          <p style={{ marginTop: '5px', height: '20px' }}>{selectedFileName}</p>
         )}
+        {thumbImgUrl && (
+          <Dialog open={isPreviewDialogOpen} onClose={() => setIsPreviewDialogOpen(false)}>
+            <DialogTitle>Preview</DialogTitle>
+            <DialogContent>
+              <div style={{ marginTop: '5px' }}>
+                <img src={thumbImgUrl} alt="preview" style={{ width: '100%' }} />
+              </div>
+              {fileSelected && <Button onClick={closePreview}>OK</Button>}
+            </DialogContent>
+          </Dialog>
+        )}
+        <SectionStyled>
+          <Inputs>
+            <TextField
+              variant="outlined"
+              label="Nome do projeto"
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleTextChange(e, 'name')}
 
+            />
+            <TextField
+              variant="outlined"
+              label="Link do Projeto"
+              type="text"
+              value={formData.link}
+              onChange={(e) => handleTextChange(e, 'link')}
+
+            />
+            <TextareaAutosize
+              id="textarea"
+              value={formData.desc}
+              onChange={(e) => handleTextChange(e, 'desc')}
+              style={{ width: '100%', minHeight: '60px', backgroundColor: '#1c1c1c' }}
+            />
+            <TextField
+              variant="outlined"
+              label="Valor"
+              type="text"
+              value={formData.value}
+              onChange={(e) => handleTextChange(e, 'value')}
+            />
+            <TextField
+              variant="outlined"
+              label="Link"
+              type="text"
+              value={formData.link}
+              onChange={(e) => handleTextChange(e, 'link')}
+            />
+          </Inputs>
+
+          <ListSkills>
+            {skills.map((skill) => (
+              <div key={skill._id} style={{ display: 'flex', alignItems: 'center' }}>
+                <img
+                  src={`${process.env.REACT_APP_API_LOCAL}/img/skills/${skill.icon}`}
+                  alt={skill.name}
+                />
+                {renderSkillItem(skill)}
+              </div>
+            ))}
+          </ListSkills>
+        </SectionStyled>
         <input
           type="file"
           id="imgInput"
@@ -254,16 +287,29 @@ export default function UpdateProject() {
           style={{ display: 'none' }}
         />
       </Header>
-      <div style={{ display: 'flex' }}>
-        {project.projectSkills?.map((skill, index) => (
-          <SkillPainel key={index}>
-            <img src={`${process.env.REACT_APP_API_LOCAL}/img/skills/${skill.icon}`} alt={skill.name} />
-          </SkillPainel>
-        ))}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Button
+          variant="contained"
+          type="submit"
+          color="success"
+          size="large"
+          sx={{ margin: 0, borderRadius: '50%' }}
+          onClick={handleSubmit}
+        >
+          <Check />
+        </Button>
+
+        <Button
+          variant="contained"
+          color="error"
+          size="large"
+          sx={{ margin: 0, borderRadius: '50%' }}
+        >
+          <Close />
+        </Button>
       </div>
-      <h4>{project.desc}</h4>
       <Images>
-        {/* Exibe as imagens existentes do projeto, mas só se não houver imagens novas no preview */}
         {preview.length === 0 && project.images?.map((image, index) => (
           <img
             src={`${process.env.REACT_APP_API_LOCAL}/img/projects/${image}`}
@@ -314,96 +360,8 @@ export default function UpdateProject() {
 
 
       <Docs>
-        {!docs ? (<h2>Nenhum documento ainda</h2>) : (
-          <>
-            {docs?.map((doc) => (
-              <CardDocs key={doc._id}>
-                <h4>{doc.name}</h4>
-                <a href={`${process.env.REACT_APP_API_LOCAL}/files/projects/${doc.doc}`} target="_blank" rel="noopener noreferrer">
-                  <i><SiAdobeacrobatreader style={{ fontSize: '60px', margin: 0, color: '#ffffff' }} /></i>
-                </a>
-
-              </CardDocs>
-            ))}
-          </>
-        )}
+        { }
       </Docs>
-
-      {!isEditing && (
-        <button onClick={handleEditClick}>Editar</button>
-      )}
-
-      <input
-        margin="dense"
-        label="Nome do projeto"
-        type="text"
-        value={formData.name}
-        onChange={(e) => handleTextChange(e, 'name')}
-        disabled={!isEditing}
-      />
-      <input
-        margin="dense"
-        label="Link do Projeto"
-        type="text"
-        value={formData.link}
-        onChange={(e) => handleTextChange(e, 'link')}
-        disabled={!isEditing}
-      />
-      <label>Breve descrição do projeto</label>
-      <textarea
-        id="textarea"
-        value={formData.desc}
-        disabled={!isEditing}
-        onChange={(e) => handleTextChange(e, 'desc')}
-        style={{ width: '98%', minHeight: '60px' }}
-      />
-
-
-      <ListSkills>
-        {skills.map((skill) => renderSkillItem(skill))}
-      </ListSkills>
-
-      <div>
-        <Checkbox
-          checked={checked}
-          onChange={handleCheck}
-          color="primary"
-          inputProps={{ 'aria-label': 'primary checkbox' }}
-        />
-        <Fade in={checked}>
-          <TextField
-            id="outlined-basic"
-            label="Valor"
-            variant="outlined"
-            style={{ marginTop: 20 }}
-            value={formData.value}
-            onChange={(e) => handleTextChange(e, 'value')}
-          />
-        </Fade>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Button
-          variant="contained"
-          type="submit"
-          color="success"
-          size="large"
-          sx={{ margin: 0, borderRadius: '50%' }}
-          onClick={handleSubmit}
-        >
-          <Check />
-        </Button>
-
-        <Button
-          variant="contained"
-          color="error"
-          size="large"
-          sx={{ margin: 0, borderRadius: '50%' }}
-        >
-          <Close />
-        </Button>
-      </div>
-      <SkillSelector />
     </Container>
   );
 }

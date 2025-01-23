@@ -12,9 +12,13 @@ export const Container = styled.div`
 export const Header = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
   img {
-    height: 140px;
+    width: 240px;
+    height: auto;
+    object-fit: cover;
   }
 `;
 
@@ -36,10 +40,65 @@ export const TextArea = styled.textarea`
 export const ListSkills = styled.div`
   display: flex;
   flex-direction: column;
-  border: solid 1px #c2c2c2;
-  margin-left: 2em;
-  max-height: 600px;
+  gap: 10px;
+  padding: 15px;
+  background-color: #1c1c1e;
+  border-radius: 8px;
+  border: 1px solid #2c2c2e;
+  max-width: 400px;
+  height: 25em;
+  margin: 0 auto;
+  color: #cccccc;
+  overflow-y: auto;
+  &::-webkit-scrollbar{
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track{
+   background: #3a3a3c;
+   padding: 1px;
+  }
+  &::-webkit-scrollbar-thumb{
+    background: #888;
+    border-radius: 10px;
+  }
+
+  div {
+    display: flex;
+    align-items: center;
+    padding: 3px;
+    border-radius: 5px;
+    background-color: #2c2c2e;
+    transition: background-color 0.2s ease;
+    width: 90%;
+
+    img {
+      height: 30px;
+      width: 30px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .MuiSvgIcon-root {
+      color: #4caf50;
+      margin-right: 5px;
+    }
+
+    span {
+      color: #f1f1f1;
+    }
+
+    &:hover {
+      background-color: #3a3a3c;
+    }
+  }
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
 `;
+
+
+
 
 export const Docs = styled.div`
   display: flex;
@@ -47,6 +106,7 @@ export const Docs = styled.div`
   width: 80%;
   border-radius: 5px;
   background-color: #cccccc;
+  height: 7em;
 `;
 
 export const CardDocs = styled.div`
@@ -90,9 +150,10 @@ export const Images = styled.div`
   border-radius: 8px;
   background-color: #f0f0f0;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
   overflow-x: auto;
   width: 90%;
-  margin: 0 auto;
+  margin: 1em;
 
   & img {
     flex-shrink: 0;
@@ -167,4 +228,16 @@ export const SelectedImages = styled.div`
   img {
     height: 5em;
   }
+`;
+
+export const Inputs = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1em;
+  background-color: #1c1c1c;
+`;
+
+export const SectionStyled = styled.section`
+  display: flex;
 `;
